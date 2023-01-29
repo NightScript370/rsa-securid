@@ -35,13 +35,13 @@ export const computeCode = (token: Token, pin?: string | number, date: Date = ne
     // key0 now contains 4 consecutive token codes; get the index for the correct code
     let idx = 0;
     if (token.intervalInSeconds == 30) {
-        idx = ((date.getUTCMinutes() & 0x01) << 3) | ((date.getUTCSeconds() >= 30 ? 1 : 0) << 2);        
+        idx = ((date.getUTCMinutes() & 0x01) << 3) | ((date.getUTCSeconds() >= 30 ? 1 : 0) << 2);
     } else if (token.intervalInSeconds == 60) {
         idx = (date.getUTCMinutes() & 0x03) << 2;
     } else {
         throw new Error('Invalid interval');
     }
-        
+
     let code = key0.readUInt32BE(idx).toString();
 
     if (code.length > token.digits)
