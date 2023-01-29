@@ -1,3 +1,5 @@
+import { Buffer } from "https://deno.land/std@0.175.0/node/buffer.ts";
+
 export const parseSecurIdDate = (securIdDate: number) => {
     const d = new Date(2000, 0, 1, 0, 0, 0, 0);
     d.setUTCDate(d.getDate() + securIdDate);

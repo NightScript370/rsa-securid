@@ -1,3 +1,5 @@
+import { Buffer } from "https://deno.land/std@0.175.0/node/buffer.ts";
+
 /** Converts a JavaScript Date to YYYYMMDDHHmm in BCD 8421 format, stored in a 6 byte buffer */
 export const dateBCD = (date: Date) => {
     const bcd = Buffer.alloc(6, 0);

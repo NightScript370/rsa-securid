@@ -1,8 +1,10 @@
-import v2 from './v2'
-import v3 from './v3'
-import v4 from './v4'
-import deviceId from './deviceId';
-import computeCode from './code';
+import { Buffer } from "https://deno.land/std@0.175.0/node/buffer.ts";
+
+import v2 from './v2.ts'
+import v3 from './v3.ts'
+import v4 from './v4.ts'
+import deviceId from './deviceId.ts';
+import computeCode from './code.ts';
 export { v2, v3, v4, deviceId, computeCode };
 
 export interface Token {
@@ -10,6 +12,7 @@ export interface Token {
     serial: string,
     digits: number
     intervalInSeconds: 30 | 60,
+    createdAt: Date,
     expiresAt: Date,
     decryptedSeed: Buffer,
     flags: {
@@ -19,7 +22,8 @@ export interface Token {
         deviceIdIsRequired: boolean,
         usesAppDerivedSeeds: boolean,
         usesTimeDerivedSeeds: boolean,
-        keyIs128Bit: boolean
+        keyIs128Bit: boolean,
+        pinIsLocal: boolean //v2 only
     },
     /**
      * Computes a code for this token

@@ -1,12 +1,14 @@
-import { computeShortMac, computeMac, aes128ECBDecrypt } from './aes';
-import { parseSecurIdDate } from './date';
-import { Token } from './index';
-import { computeCode } from './code';
+import { Buffer } from "https://deno.land/std@0.175.0/node/buffer.ts";
 
-export const v2 = (rawToken: string, password: string = '', deviceId: string = ''): Token => decrypt(parse(rawToken), password, deviceId);
+import { computeShortMac, computeMac, aes128ECBDecrypt } from './aes.ts';
+import { parseSecurIdDate } from './date.ts';
+import { Token } from './index.ts';
+import { computeCode } from './code.ts';
+
+export const v2 = (rawToken: string, password = '', deviceId = ''): Token => decrypt(parse(rawToken), password, deviceId);
 export default v2;
 
-const decrypt = (token: any, password: string = '', deviceId: string = ''): Token => {
+const decrypt = (token: ReturnType<typeof parse>, password = '', deviceId = ''): Token => {
     if (!password && token.flags.passwordIsRequired) throw new Error('Missing password')
     if (!deviceId && token.flags.deviceIdIsRequired) throw new Error('Missing deviceId')
 
@@ -14,16 +16,20 @@ const decrypt = (token: any, password: string = '', deviceId: string = ''): Toke
 
     if (token.flags.deviceIdIsRequired && deviceIdHash != token.deviceIdHash) throw new Error('Mismatching deviceIdHash');
 
-    token.decryptedSeed = aes128ECBDecrypt(key, token.encryptedSeed);
-    const computed_mac = computeShortMac(token.decryptedSeed.slice(0, 16));
+    const parsedToken:Partial<Token> = Object.assign({}, token, {
+        version: <const>2,
+        decryptedSeed: aes128ECBDecrypt(key, token.encryptedSeed),
+        flags: token.flags as Token["flags"]
+    })
+    const computed_mac = computeShortMac(parsedToken.decryptedSeed!.slice(0, 16));
 
     if (computed_mac != token.decryptedSeedHash) throw new Error('Mismatcing decryptedSeedHash');
 
-    token.computeCode = computeCode.bind(null, token);
-    return token;
+    parsedToken.computeCode = computeCode.bind(null, parsedToken as Token);
+    return parsedToken as Token;
 }
 
-const getEncryptionKey = (token: any, password: string = '', deviceId: string = '', isSmartPhone: boolean = true) => {
+const getEncryptionKey = (token: ReturnType<typeof parse>, password = '', deviceId = '', isSmartPhone = true) => {
     const magic = Buffer.from([ 0xd8, 0xf5, 0x32, 0x53, 0x82, 0x89 ]);
     const key = Buffer.alloc(password.length + deviceId.length + magic.length, 0);
 
@@ -77,12 +83,12 @@ const parse = (rawToken: string) => {
 
     const version = token.charCodeAt(0) - 48;
     const serial = token.substr(1, 12);
-    const flags: any = {};
+    const flags: Partial<Token["flags"]> = {};
 
     const encryptedSeed = binaryToBuffer(bitsString(token, 39, 167));
 
     const flagBits = bits(token, 167, 183);
-    const intervalInSeconds = (flagBits & 0x03) != 0 ? 60 : 30; // Bit 0-1 (0x03)
+    const intervalInSeconds = (flagBits & 0x03) != 0 ? <const>60 : <const>30; // Bit 0-1 (0x03)
                                                                 // Bit 2 (0x04) is ignored
     flags.pinIsLocal = ((flagBits & 0x08) != 0);                // Bit 3 (0x08)
     flags.pinIsRequired = ((flagBits & 0x10) != 0);             // Bit 4 (0x10)
@@ -124,10 +130,10 @@ const binaryToBuffer = (binaryStr: string) => {
 }
 
 // Converts string of decimals to binary, 3 bits per digit, as a number
-const bits = (str: string, start: number = 0, end: number = str.length * 3) => parseInt(bitsString(str, start, end), 2);
+const bits = (str: string, start = 0, end: number = str.length * 3) => parseInt(bitsString(str, start, end), 2);
 
 // Converts string of decimals to binary, 3 bits per digit, as binary string
-const bitsString = (str: string, start: number = 0, end: number = str.length * 3) => {
+const bitsString = (str: string, start = 0, end: number = str.length * 3) => {
     let s = '';
     for (let i = Math.floor(start/3); i < end / 3; i++) {
         let v = str.charCodeAt(i) - 48;

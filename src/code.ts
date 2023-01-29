@@ -1,6 +1,8 @@
-import { aes128ECBEncrypt } from './aes';
-import { dateBCD } from './bcd';
-import { Token, Code } from './index'
+import { Buffer } from "https://deno.land/std@0.175.0/node/buffer.ts";
+
+import { aes128ECBEncrypt } from './aes.ts';
+import { dateBCD } from './bcd.ts';
+import { Token, Code } from './index.ts'
 
 export const computeCode = (token: Token, pin?: string | number, date: Date = new Date()): Code => {
     if (!pin && token.flags.pinIsRequired) throw new Error('Missing pin')

@@ -1,4 +1,5 @@
-import crypto from 'crypto';
+import * as nodeCrypto from "https://deno.land/std@0.175.0/node/crypto.ts";
+import { Buffer } from "https://deno.land/std@0.175.0/node/buffer.ts";
 
 // Computes short MAC for given data
 export const computeShortMac = (data: string | Buffer) => {
@@ -48,13 +49,13 @@ const xor = (a: Buffer, b: Buffer) => {
     return c;
 }
 
-export const aes128ECBEncrypt = (key: Buffer, data: Buffer) => crypto.createCipheriv('aes-128-ecb', key, '').setAutoPadding(false).update(data);
-export const aes128ECBDecrypt = (key: Buffer, data: Buffer) => crypto.createDecipheriv('aes-128-ecb', key, '').setAutoPadding(false).update(data);
+export const aes128ECBEncrypt = (key: Buffer, data: Buffer) => nodeCrypto.createCipheriv('aes-128-ecb', key, '').setAutoPadding(false).update(data);
+export const aes128ECBDecrypt = (key: Buffer, data: Buffer) => new nodeCrypto.Decipheriv('aes-128-ecb', key, '').setAutoPadding(false).update(data);
 
-export const aes256CBCEncrypt = (key: Buffer, data: Buffer, iv: Buffer) => crypto.createCipheriv('aes-256-cbc', key, iv).setAutoPadding(false).update(data);
-export const aes256CBCDecrypt = (key: Buffer, data: Buffer, iv: Buffer) => crypto.createDecipheriv('aes-256-cbc', key, iv).setAutoPadding(false).update(data);
+export const aes256CBCEncrypt = (key: Buffer, data: Buffer, iv: Buffer) => nodeCrypto.createCipheriv('aes-256-cbc', key, iv).setAutoPadding(false).update(data);
+export const aes256CBCDecrypt = (key: Buffer, data: Buffer, iv: Buffer) => new nodeCrypto.Decipheriv('aes-256-cbc', key, iv).setAutoPadding(false).update(data);
 
-export const sha256Hash = (data: Buffer) => crypto.createHash('sha256').update(data).digest();
-export const sha256Hmac = (key: Buffer, data: Buffer) => crypto.createHmac('sha256', key).update(data).digest();
+export const sha256Hash = (data: Buffer) => nodeCrypto.createHash('sha256').update(data).digest() as Buffer;
+export const sha256Hmac = (key: Buffer, data: Buffer) => nodeCrypto.createHmac('sha256', key).update(data).digest();
 
-export const PBKDF2Sha256 = (dklen: number, password: Buffer, salt: Buffer, iterationCount: number) => crypto.pbkdf2Sync(password, salt, iterationCount, dklen, 'sha256');
+export const PBKDF2Sha256 = (dklen: number, password: Buffer, salt: Buffer, iterationCount: number) => nodeCrypto.pbkdf2Sync(password, salt, iterationCount, dklen, 'sha256');
