@@ -1,11 +1,12 @@
 import v2 from './v2'
 import v3 from './v3'
+import v4 from './v4'
 import deviceId from './deviceId';
 import computeCode from './code';
-export { v2, v3, deviceId, computeCode };
+export { v2, v3, v4, deviceId, computeCode };
 
 export interface Token {
-    version: 2 | 3,
+    version: 2 | 3 | 4,
     serial: string,
     digits: number
     intervalInSeconds: 30 | 60,
