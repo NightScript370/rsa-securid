@@ -5,19 +5,19 @@ import { convertV3TokenDate } from './date.ts';
 import { Token } from './index.ts';
 import { computeCode } from './code.ts';
 
-export const v4 = (rawToken: string, password = '', deviceId = ''): Token => decrypt(parse(rawToken), password, deviceId);
+export const v4 = async (rawToken: string, password = '', deviceId = '')=> await decrypt(parse(rawToken), password, deviceId);
 export default v4;
 
-const decrypt = (token: ReturnType<typeof parse>, password = '', deviceId = ''): Token => {
+const decrypt = async (token: ReturnType<typeof parse>, password = '', deviceId = '') => {
     if (!password && token.flags.passwordIsRequired) throw new Error('Missing password');
     if (!deviceId && token.flags.deviceIdIsRequired) throw new Error('Missing deviceId');
 
     const deviceIdClean = deviceId.replace(/[^\da-f]/gi, "").toUpperCase();
 
-    let hash = computeHash('', deviceIdClean, token._nonce);
+    let hash = await computeHash('', deviceIdClean, token._nonce);
     if (hash.compare(token._nonce_devid_hash) != 0) throw new Error('Mismatching _nonce_devid_hash');
 
-    hash = computeHash(password, deviceIdClean, token._nonce);
+    hash = await computeHash(password, deviceIdClean, token._nonce);
     if (hash.compare(token._nonce_devid_pass_hash) != 0) throw new Error('Mismatching _nonce_devid_pass_hash');
 
     const hmacKey = deriveKey(password, deviceIdClean, token._nonce, 0);
@@ -106,7 +106,7 @@ const parse = (rawToken: string) => {
     }
 }
 
-const computeHash = (password = '', deviceId = '', salt: Buffer) => {
+const computeHash = async (password = '', deviceId = '', salt: Buffer) => {
     if (!salt) throw new Error('Missing salt');
     
     const hash_buf = Buffer.alloc(salt.length + 48 + password.length, 0);
@@ -116,7 +116,7 @@ const computeHash = (password = '', deviceId = '', salt: Buffer) => {
     if (deviceId) hash_buf.write(deviceId, salt.length, 48);
     if (password) hash_buf.write(password, salt.length + 48, password.length);
 
-    return sha256Hash(hash_buf);
+    return await sha256Hash(hash_buf);
 }
 
 const toBytes = (token: ReturnType<typeof parse>, includeMac: boolean) => {

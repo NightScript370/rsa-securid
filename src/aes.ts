@@ -55,7 +55,7 @@ export const aes128ECBDecrypt = (key: Buffer, data: Buffer) => new nodeCrypto.De
 export const aes256CBCEncrypt = (key: Buffer, data: Buffer, iv: Buffer) => nodeCrypto.createCipheriv('aes-256-cbc', key, iv).setAutoPadding(false).update(data);
 export const aes256CBCDecrypt = (key: Buffer, data: Buffer, iv: Buffer) => new nodeCrypto.Decipheriv('aes-256-cbc', key, iv).setAutoPadding(false).update(data);
 
-export const sha256Hash = (data: Buffer) => nodeCrypto.createHash('sha256').update(data).digest() as Buffer;
+export const sha256Hash = async (data: Buffer) => Buffer.from(await crypto.subtle.digest('SHA-256', data))
 export const sha256Hmac = (key: Buffer, data: Buffer) => nodeCrypto.createHmac('sha256', key).update(data).digest();
 
 export const PBKDF2Sha256 = (dklen: number, password: Buffer, salt: Buffer, iterationCount: number) => nodeCrypto.pbkdf2Sync(password, salt, iterationCount, dklen, 'sha256');
